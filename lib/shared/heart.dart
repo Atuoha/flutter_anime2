@@ -11,18 +11,18 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
   AnimationController? _controller;
   Animation? _colorAnimation;
   Animation? _sizeAnimation;
+  Animation<double>? _curves;
 
-  @override
-  void initState() {
-    super.initState();
-
+  _animate() {
     _controller = AnimationController(
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
+    _curves = CurvedAnimation(parent: _controller!, curve: Curves.easeInSine);
+
     _colorAnimation = ColorTween(begin: Colors.grey[400], end: Colors.red)
-        .animate(_controller!);
+        .animate(_curves!);
 
     _sizeAnimation = TweenSequence([
       TweenSequenceItem<double>(
@@ -34,6 +34,12 @@ class _HeartState extends State<Heart> with SingleTickerProviderStateMixin {
       TweenSequenceItem<double>(
           tween: Tween<double>(begin: 60, end: 30), weight: 50),
     ]).animate(_controller!);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animate();
   }
 
   @override
