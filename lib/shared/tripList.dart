@@ -10,13 +10,15 @@ class TripList extends StatefulWidget {
 }
 
 class _TripListState extends State<TripList> {
-  List<Widget> tripTiles = [];
-  final GlobalKey _listKey = GlobalKey();
+  final List<Widget> _tripTiles = [];
+  final GlobalKey<AnimatedListState> _listKey = GlobalKey<AnimatedListState>();
 
   @override
   void initState() {
     super.initState();
-    _addTrips();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _addTrips();
+    });
   }
 
   void _addTrips() {
@@ -30,7 +32,8 @@ class _TripListState extends State<TripList> {
     ];
 
     for (var trip in trips) {
-      tripTiles.add(_buildTile(trip));
+      _tripTiles.add(_buildTile(trip));
+      _listKey.currentState?.insertItem(_tripTiles.length - 1, duration: const  Duration(milliseconds: 1500));
     }
   }
 
@@ -47,9 +50,10 @@ class _TripListState extends State<TripList> {
           Text(
             '${trip.nights} nights',
             style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.blue[300]),
+              fontSize: 14,
+              fontWeight: FontWeight.bold,
+              color: Colors.blue[300],
+            ),
           ),
           Text(
             trip.title,
@@ -61,24 +65,29 @@ class _TripListState extends State<TripList> {
         borderRadius: BorderRadius.circular(8.0),
         child: Hero(
           tag: trip.title,
-          child:
-        Image.asset(
-          'images/${trip.img}',
-          height: 50.0,
+          child: Image.asset(
+            'images/${trip.img}',
+            height: 50.0,
+          ),
         ),
-      ),
       ),
       trailing: Text('\$${trip.price}'),
     );
   }
 
+  final Tween<Offset> _offset =
+      Tween<Offset>(begin: const Offset(1, 0), end: const Offset(0, 0));
+
   @override
   Widget build(BuildContext context) {
-    return ListView.builder(
+    return AnimatedList(
         key: _listKey,
-        itemCount: tripTiles.length,
-        itemBuilder: (context, index) {
-          return tripTiles[index];
+        initialItemCount: _tripTiles.length,
+        itemBuilder: (context, index, animation) {
+          return SlideTransition(
+            position: animation.drive(_offset),
+            child: _tripTiles[index],
+          );
         });
   }
 }
